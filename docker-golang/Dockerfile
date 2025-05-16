@@ -1,7 +1,11 @@
-FROM golang:1.20-alpine
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
 COPY . .
 
-RUN go build -o main main.go`
+FROM scratch AS runner
+
+COPY --from=builder /app .
+
+ENTRYPOINT [ "go run ." ]
