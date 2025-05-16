@@ -2,18 +2,18 @@ FROM golang:1.24.3-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod ./
+COPY . .
 RUN go mod download
 
-COPY . .
-
-RUN go build -ldflags="-s -w" -o app
+RUN CGO_ENABLED=1 go build \
+    -ldflags="-s -w -extldflags '-static'" \
+    -o binariy
 
 RUN apk add --no-cache upx \
-    && upx --best --lzma app
+    && upx --best --lzma binariy
 
 FROM scratch AS runner
 
-COPY --from=builder /app/app .
+COPY --from=builder  /app/binariy .
 
-ENTRYPOINT [ "./app" ]
+ENTRYPOINT [ "./binariy" ]
